@@ -1,6 +1,5 @@
 import express from "express";
 import dotenv from "dotenv";
-import { timeStamp } from "console";
 
 dotenv.config();
 const app = express();
@@ -11,16 +10,31 @@ app.get("/", (req, res) => {
   res.send({ message: "hng has started" });
 });
 
-app.get("/me", (req, res) => {
-  res.send({
+app.get("/me", async (req, res) => {
+  async function getCatData() {
+    try {
+      const response = await fetch("https://catfact.ninja/fact");
+      if (!response.ok)
+        throw new Error(`HTTP error! Status: ${response.status}`);
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Fetch error:", error.message);
+    }
+  }
+
+  const catFact = await getCatData();
+
+  res.json({
     status: "success",
     user: {
       email: "okongordian",
       name: "gordian okon",
       stack: "Nodejs",
     },
-    timestamp: "current utc time in iso 8601 format",
-    fact: "random cat fact from cat facts API",
+    timestamp: new Date().toISOString(),
+    fact: catFact.fact,
   });
 });
 
