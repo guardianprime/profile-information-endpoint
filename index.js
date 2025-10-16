@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
+import axios from "axios";
 
 const limiter = rateLimit({
   windowMs: 60 * 1000,
@@ -14,38 +15,46 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 const catApiUrl = process.env.CAT_API_URL || "https://catfact.ninja/fact";
+const userName = process.env.user_name || "gordian okon";
+const userEmail = process.env.user_email || "guardianacer@outlook.com";
+const userStack = process.env.user_stack || "nodejs";
 
 app.use(cors());
 app.use(limiter);
 
 async function getCatData() {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
-
   try {
-    const response = await fetch(catApiUrl, { signal: controller.signal });
-    clearTimeout(timeout);
+    const response = await axios.get(catApiUrl, { timeout: 5000 });
 
-    if (!response.ok) {
-      console.error(`Cat API Error: ${response.status}`);
-      return { success: false, fact: "Could not fetch cat fact (API error)" };
-    }
-
-    const data = await response.json();
-    return { success: true, fact: data.fact };
+    return { success: true, fact: response.data.fact };
   } catch (error) {
-    clearTimeout(timeout);
-    if (error.name === "AbortError") {
+    // Handle different error types
+    if (error.code === "ECONNABORTED") {
       console.error("Cat API request timed out");
       return { success: false, fact: "Request timed out fetching cat fact" };
     }
-    console.error("Cat API fetch error:", error.message);
-    return { success: false, fact: "Could not fetch cat fact (network error)" };
+
+    if (error.response) {
+      console.error(`Cat API Error: ${error.response.status}`);
+      return { success: false, fact: "Could not fetch cat fact (API error)" };
+    } else if (error.request) {
+      console.error("No response received from Cat API");
+      return { success: false, fact: "No response from cat fact server" };
+    } else {
+      console.error("Cat API fetch error:", error.message);
+      return {
+        success: false,
+        fact: "Could not fetch cat fact (network error)",
+      };
+    }
   }
 }
 
 app.get("/", (req, res) => {
-  res.send({ message: "This is a hng project task, use the /me endpoint to access user information and cat facts" });
+  res.send({
+    message:
+      "This is a hng project task, use the /me endpoint to access user information and cat facts",
+  });
 });
 
 app.get("/me", async (req, res) => {
@@ -63,9 +72,9 @@ app.get("/me", async (req, res) => {
   res.status(200).json({
     status: "success",
     user: {
-      email: process.env.user_email,
-      name: process.env.user_name,
-      stack: process.env.user_stack,
+      email: userEmail,
+      name: userName,
+      stack: userStack,
     },
     timestamp: new Date().toISOString(),
     fact: catFact.fact,
@@ -73,5 +82,5 @@ app.get("/me", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`server is running on cool temp!! @ ${PORT} `);
+  console.log(`server is running on cool temp!! @ ${PORT}`);
 });
