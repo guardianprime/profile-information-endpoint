@@ -45,7 +45,7 @@ async function getCatData() {
 }
 
 app.get("/", (req, res) => {
-  res.send({ message: "This is a " });
+  res.send({ message: "This is a hng project task, use the /me endpoint to access user information and cat facts" });
 });
 
 app.get("/me", async (req, res) => {
@@ -63,9 +63,9 @@ app.get("/me", async (req, res) => {
   res.status(200).json({
     status: "success",
     user: {
-      email: "okongordian",
-      name: "gordian okon",
-      stack: "Nodejs",
+      email: process.env.user_email,
+      name: process.env.user_name,
+      stack: process.env.user_stack,
     },
     timestamp: new Date().toISOString(),
     fact: catFact.fact,
