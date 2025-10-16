@@ -16,7 +16,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const catApiUrl = process.env.CAT_API_URL || "https://catfact.ninja/fact";
 const userName = process.env.user_name || "gordian okon";
-const userEmail = process.env.user_email || "guardianacer@outlook.com";
+const userEmail = process.env.user_email || "okongordian@gmail.com";
 const userStack = process.env.user_stack || "nodejs";
 
 app.use(cors());
